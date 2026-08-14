@@ -10,7 +10,6 @@ import (
 )
 
 func TestLoad(t *testing.T) {
-	t.Parallel()
 	t.Run("empty", func(t *testing.T) {
 		got, err := env.Load("testdata/empty.txt")
 		want := map[string]string{}
@@ -60,7 +59,6 @@ func TestLoad(t *testing.T) {
 }
 
 func TestLoadReader(t *testing.T) {
-	t.Parallel()
 	t.Run("empty", func(t *testing.T) {
 		f, err := os.Open("testdata/empty.txt")
 		tester.AssertEqualErr(t, nil, err)
@@ -123,7 +121,6 @@ func TestLoadReader(t *testing.T) {
 }
 
 func TestParse(t *testing.T) {
-	t.Parallel()
 	t.Run("empty", func(t *testing.T) {
 		txt := ``
 		m, err := env.Parse([]byte(txt))
@@ -285,7 +282,6 @@ func TestParse(t *testing.T) {
 }
 
 func TestParseReader(t *testing.T) {
-	t.Parallel()
 	t.Run("read error", func(t *testing.T) {
 		txt := `
 			FOO=foo
