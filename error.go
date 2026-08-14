@@ -16,7 +16,10 @@ func (e *Error) Unwrap() error {
 }
 
 func (e *Error) Error() string {
-	s := "go-env/env: " + e.Type + ": " + e.Msg
+	s := "go-env/env: " + e.Type + ":"
+	if e.Msg != "" {
+		s += " " + e.Msg
+	}
 	if e.Inner != nil {
 		s = s + " [" + e.Inner.Error() + "]"
 	}

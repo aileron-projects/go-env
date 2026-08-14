@@ -24,7 +24,7 @@ func TestError(t *testing.T) {
 	t.Run("empty message", func(t *testing.T) {
 		err := &Error{Inner: io.EOF, Type: "type", Msg: ""}
 		msg := err.Error()
-		tester.AssertEqual(t, "go-env/env: type:  [EOF]", msg)
+		tester.AssertEqual(t, "go-env/env: type: [EOF]", msg)
 	})
 	t.Run("errors equal", func(t *testing.T) {
 		err1 := &Error{Type: "type", Msg: "aaa", Inner: nil}
