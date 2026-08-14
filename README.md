@@ -240,6 +240,7 @@ m, err := env.GetenvMap[int]("BAZ", "", "") // map[key1:123 key2:456]
 ## References
 
 - [joho/godotenv](https://github.com/joho/godotenv)
+- [sethvargo/go-envconfig](https://github.com/sethvargo/go-envconfig)
 - [Shell Parameter Expansion](https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html)
 - [Parameter Substitution - Advanced Bash-Scripting Guide](https://tldp.org/LDP/abs/html/parameter-substitution.html)
 - [Parameter Expansion](https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_06_02)
