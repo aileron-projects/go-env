@@ -237,7 +237,7 @@ m, err := env.GetenvMap[int]("BAZ", "", "") // map[key1:123 key2:456]
 - GoDoc: <https://pkg.go.dev/github.com/aileron-projects/go-env>
 - Examples:
   - [example_test.go](./example_test.go)
-  - Autoload: [examples/autoload/](./examples/autoload/)
+  - Autoload .env: [examples/autoloading/](./examples/autoloading/)
   - Loading env files: [examples/dotenv/](./examples/dotenv/)
 
 ## References
