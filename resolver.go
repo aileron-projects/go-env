@@ -75,54 +75,63 @@ import (
 //	  L       : convert all characters to lower case using [strings.ToLower]
 //	  l       : convert the first character to lower case using [strings.ToLower]
 func Resolve(exp string) (string, error) {
+	return resolve(exp, nil)
+}
+
+func resolve(exp string, priority map[string]string) (string, error) {
 	if len(exp) < 3 || string(exp[:2]) != "${" || exp[len(exp)-1] != '}' {
 		return "", expressionError(exp)
 	}
 
-	parameter, others := splitVar(exp[2 : len(exp)-1])
+	trimmed := strings.TrimSpace(exp[2 : len(exp)-1])
+	parameter, others := splitVar(trimmed)
+	if parameter == "" && others == "" {
+		return "", expressionError(exp)
+	}
+
 	if len(others) == 0 {
 		// Pattern:
 		//  ${parameter}
-		return env01(string(parameter))
+		return env01(string(parameter), priority)
 	}
 
 	if len(parameter) == 0 {
 		// Pattern:
 		//  ${!prefix*} ${!prefix@}
 		//  ${#parameter}
-		return resolveGroup1(string(others))
+		return resolveGroup1(string(others), priority)
 	}
 
 	switch others[0] {
 	case '-', '=', '?', '+':
 		//  ${parameter-word} ${parameter=word}
 		//  ${parameter?word} ${parameter+word}
-		return resolveGroup2(string(parameter), string(others))
+		return resolveGroup2(string(parameter), string(others), priority)
 	case ':':
 		// Pattern:
 		//  ${parameter:-word} ${parameter:=word}
 		//  ${parameter:?word} ${parameter:+word}
 		//  ${parameter:offset} ${parameter:offset:length}
-		return resolveGroup2(string(parameter), string(others))
+		return resolveGroup2(string(parameter), string(others), priority)
 	case '#', '%':
 		// Pattern:
 		//  ${parameter#word} ${parameter##word}
 		//  ${parameter%word} ${parameter%%word}
-		return resolveGroup3(string(parameter), string(others))
+		return resolveGroup3(string(parameter), string(others), priority)
 	case '/':
 		// Pattern:
 		//  ${parameter/pattern/string} ${parameter//pattern/string}
 		//  ${parameter/#pattern/string} ${parameter/%pattern/string}
-		return resolveGroup4(string(parameter), string(others))
+		return resolveGroup4(string(parameter), string(others), priority)
 	case '^', ',':
 		// Pattern:
 		//  ${parameter^pattern} ${parameter^^pattern}
 		//  ${parameter,pattern} ${parameter,,pattern}
-		return resolveGroup5(string(parameter), string(others))
+		return resolveGroup5(string(parameter), string(others), priority)
 	case '@':
 		// Pattern:
 		//  ${parameter@operator}
-		return env27(string(parameter), string(others[1:]))
+		return env27(string(parameter), string(others[1:]), priority)
 	default:
 		return "", expressionError(exp)
 	}
@@ -141,19 +150,19 @@ func splitVar(s string) (parameter, others string) {
 //   - 12: ${!prefix*}   --> o=!prefix*
 //   - 13: ${!prefix@}   --> o=!prefix@
 //   - 14: ${#parameter} --> o=#parameter
-func resolveGroup1(o string) (string, error) {
+func resolveGroup1(o string, priority map[string]string) (string, error) {
 	if len(o) < 2 {
 		return "", expressionError("${" + o + "}")
 	}
 	switch o[0] {
 	case '#':
-		return env14(o[1:])
+		return env14(o[1:], priority)
 	case '!':
 		switch o[len(o)-1] {
 		case '*':
-			return env12(o[1 : len(o)-1])
+			return env12(o[1:len(o)-1], priority)
 		case '@':
-			return env13(o[1 : len(o)-1])
+			return env13(o[1:len(o)-1], priority)
 		}
 	}
 	return "", expressionError("${" + o + "}")
@@ -170,37 +179,37 @@ func resolveGroup1(o string) (string, error) {
 //   - 09: ${parameter+word}          --> o=+word
 //   - 10: ${parameter:offset}        --> o=:offset
 //   - 11: ${parameter:offset:length} --> o=:offset:length
-func resolveGroup2(p, o string) (string, error) {
+func resolveGroup2(p, o string, priority map[string]string) (string, error) {
 	if len(o) < 1 {
 		return "", expressionError("${" + p + o + "}")
 	}
 	switch o[0] {
 	case '-':
-		return env03(p, o[1:])
+		return env03(p, o[1:], priority)
 	case '=':
-		return env05(p, o[1:])
+		return env05(p, o[1:], priority)
 	case '?':
-		return env07(p, o[1:])
+		return env07(p, o[1:], priority)
 	case '+':
-		return env09(p, o[1:])
+		return env09(p, o[1:], priority)
 	case ':':
 		if len(o) < 2 {
 			return "", expressionError("${" + p + o + "}")
 		}
 		switch o[1] {
 		case '-':
-			return env02(p, o[2:])
+			return env02(p, o[2:], priority)
 		case '=':
-			return env04(p, o[2:])
+			return env04(p, o[2:], priority)
 		case '?':
-			return env06(p, o[2:])
+			return env06(p, o[2:], priority)
 		case '+':
-			return env08(p, o[2:])
+			return env08(p, o[2:], priority)
 		default:
 			if i := strings.Index(o[1:], ":"); i > 0 {
-				return env11(p, o[1:i+1], o[i+2:])
+				return env11(p, o[1:i+1], o[i+2:], priority)
 			} else {
-				return env10(p, o[1:])
+				return env10(p, o[1:], priority)
 			}
 		}
 	}
@@ -212,22 +221,22 @@ func resolveGroup2(p, o string) (string, error) {
 //   - 16: ${parameter##word}  --> o=##word
 //   - 17: ${parameter%word}   --> o=%word
 //   - 18: ${parameter%%word}  --> o=%%word
-func resolveGroup3(p, o string) (string, error) {
+func resolveGroup3(p, o string, priority map[string]string) (string, error) {
 	if len(o) < 1 {
 		return "", expressionError("${" + p + o + "}")
 	}
 	switch o[0] {
 	case '#':
 		if len(o) > 1 && o[1] == '#' {
-			return env16(p, o[2:])
+			return env16(p, o[2:], priority)
 		} else {
-			return env15(p, o[1:])
+			return env15(p, o[1:], priority)
 		}
 	case '%':
 		if len(o) > 1 && o[1] == '%' {
-			return env18(p, o[2:])
+			return env18(p, o[2:], priority)
 		} else {
-			return env17(p, o[1:])
+			return env17(p, o[1:], priority)
 		}
 	}
 	return "", expressionError("${" + p + o + "}")
@@ -238,26 +247,26 @@ func resolveGroup3(p, o string) (string, error) {
 //   - 20: ${parameter//pattern/string} --> o=//pattern/string
 //   - 21: ${parameter/#pattern/string} --> o=/#pattern/string
 //   - 22: ${parameter/%pattern/string} --> o=/%pattern/string
-func resolveGroup4(p, o string) (string, error) {
+func resolveGroup4(p, o string, priority map[string]string) (string, error) {
 	if len(o) < 2 {
 		return "", expressionError("${" + p + o + "}")
 	}
 	switch o[1] {
 	case '/':
 		if i := strings.Index(o[2:], "/"); i > 0 {
-			return env20(p, o[2:i+2], o[i+3:])
+			return env20(p, o[2:i+2], o[i+3:], priority)
 		}
 	case '#':
 		if i := strings.Index(o[2:], "/"); i > 0 {
-			return env21(p, o[2:i+2], o[i+3:])
+			return env21(p, o[2:i+2], o[i+3:], priority)
 		}
 	case '%':
 		if i := strings.Index(o[2:], "/"); i > 0 {
-			return env22(p, o[2:i+2], o[i+3:])
+			return env22(p, o[2:i+2], o[i+3:], priority)
 		}
 	default:
 		if i := strings.Index(o[1:], "/"); i > 0 {
-			return env19(p, o[1:i+1], o[i+2:])
+			return env19(p, o[1:i+1], o[i+2:], priority)
 		}
 	}
 	return "", expressionError("${" + p + o + "}")
@@ -268,22 +277,22 @@ func resolveGroup4(p, o string) (string, error) {
 //   - 24: ${parameter^^pattern} --> o=^^pattern
 //   - 25: ${parameter,pattern}  --> o=,pattern
 //   - 26: ${parameter,,pattern} --> o=,,pattern
-func resolveGroup5(p, o string) (string, error) {
+func resolveGroup5(p, o string, priority map[string]string) (string, error) {
 	if len(o) < 1 {
 		return "", expressionError("${" + p + o + "}")
 	}
 	switch o[0] {
 	case '^':
 		if len(o) > 1 && o[1] == '^' {
-			return env24(p, o[2:])
+			return env24(p, o[2:], priority)
 		} else {
-			return env23(p, o[1:])
+			return env23(p, o[1:], priority)
 		}
 	case ',':
 		if len(o) > 1 && o[1] == ',' {
-			return env26(p, o[2:])
+			return env26(p, o[2:], priority)
 		} else {
-			return env25(p, o[1:])
+			return env25(p, o[1:], priority)
 		}
 	}
 	return "", expressionError("${" + p + o + "}")

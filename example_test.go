@@ -61,31 +61,21 @@ func ExampleGetenvMap() {
 func ExampleSubst() {
 	os.Setenv("FOO", "foo")
 	os.Setenv("BAR", "FOO")
+	os.Setenv("BAZ", "BAR")
 
-	b1, _ := env.Subst([]byte(`{FOO}=${FOO}`))
-	fmt.Println(string(b1))
+	b1, err := env.Subst([]byte(`\$\{FOO\}=${FOO}`))
+	fmt.Println(string(b1), err)
 
-	b2, _ := env.Subst([]byte(`{{BAR}}=${${BAR}}`))
-	fmt.Println(string(b2)) // Nested env is not supported.
+	b2, err := env.Subst([]byte(`\$\{\$\{BAR\}\}=\$\{FOO\}=${${BAR}}`))
+	fmt.Println(string(b2), err)
 
-	// Output:
-	// {FOO}=foo
-	// {{BAR}}=${FOO}
-}
-
-func ExampleSubst2() {
-	os.Setenv("FOO", "foo")
-	os.Setenv("BAR", "FOO")
-
-	b1, _ := env.Subst2([]byte(`{FOO}=${FOO}`))
-	fmt.Println(string(b1))
-
-	b2, _ := env.Subst2([]byte(`{{BAR}}={FOO}=${${BAR}}`))
-	fmt.Println(string(b2)) // Nested env is not supported.
+	b3, err := env.Subst([]byte(`\$\{\$\{\$\{BAZ\}\}\}=\$\{\$\{BAR\}\}=\$\{FOO\}=${${${BAZ}}}`)) // Resplve nested env.
+	fmt.Println(string(b3), err)                                                                 // Nested env is not supported.
 
 	// Output:
-	// {FOO}=foo
-	// {{BAR}}={FOO}=foo
+	// ${FOO}=foo <nil>
+	// ${${BAR}}=${FOO}=foo <nil>
+	// ${${${BAZ}}}=${${BAR}}=${FOO}=foo <nil>
 }
 
 func ExampleSubst_all() {

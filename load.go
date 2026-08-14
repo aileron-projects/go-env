@@ -14,45 +14,41 @@ import (
 // Duplicated keys are always overwritten.
 // The default ".env" is loaded if no files provided.
 // See [Parse] for file formats and [Resolve] for enviromental variable expressions.
-func Load(files ...string) error {
+func Load(files ...string) (map[string]string, error) {
 	if len(files) == 0 {
 		files = append(files, ".env")
 	}
+	readers := make([]io.Reader, 0, len(files))
 	for _, f := range files {
-		b, err := os.ReadFile(f)
+		r, err := os.Open(f)
 		if err != nil {
-			return &Error{Inner: err, Type: "load", Msg: f}
+			return nil, &Error{Inner: err, Type: "load", Msg: f}
 		}
-		kvs, err := Parse(b)
-		if err != nil {
-			return &Error{Inner: err, Type: "load", Msg: f}
-		}
-		for key, value := range kvs {
-			if err := os.Setenv(key, value); err != nil {
-				return &Error{Inner: err, Type: "load", Msg: "set env `" + key + "` in" + f}
-			}
-		}
+		readers = append(readers, r)
+		defer r.Close()
 	}
-	return nil
+	return LoadReaders(readers...)
 }
 
 // LoadReaders loads environmental variables from files.
 // It sets parsed values with [os.Setenv].
 // Duplicated keys are always overwritten.
 // Unline [Load], LoadReaders do nothing even when no readers were provided.
-func LoadReaders(readers ...io.Reader) error {
+func LoadReaders(readers ...io.Reader) (map[string]string, error) {
+	m := map[string]string{}
 	for _, r := range readers {
-		kvs, err := ParseReader(r)
+		envs, err := parse(r)
 		if err != nil {
-			return &Error{Inner: err, Type: "load", Msg: "from io reader"}
+			return nil, err
 		}
-		for key, value := range kvs {
-			if err := os.Setenv(key, value); err != nil {
-				return &Error{Inner: err, Type: "load", Msg: "set env `" + key + "`"}
+		for k, v := range envs {
+			if err := os.Setenv(k, v); err != nil {
+				return nil, &Error{Inner: err, Type: "load", Msg: "set env `" + k + "`"}
 			}
+			m[k] = v
 		}
 	}
-	return nil
+	return m, nil
 }
 
 // Parse parses environmental variable from the given bytes.
@@ -113,23 +109,30 @@ func Parse(b []byte) (map[string]string, error) {
 
 // Parse parses environmental variables from the reader.
 // See [Parse] for more details.
-func ParseReader(r io.Reader) (envs map[string]string, err error) {
+func ParseReader(r io.Reader) (map[string]string, error) {
+	envs, err := parse(r)
+	if err != nil {
+		return nil, err
+	}
+	return envs, nil
+}
+
+func parse(r io.Reader) (map[string]string, error) {
 	reader := bufio.NewReader(r)
-	envs = map[string]string{}
+	envs := map[string]string{}
 	inSingleQuote, inDoubleQuote := false, false
 	multilineName, multilineValue := "", ""
 	current := 0 // Line number.
 	eof := false // End of file flag.
 	for !eof {
-		var line []byte
 		current += 1
-		line, err = reader.ReadBytes('\n')
+		line, err := reader.ReadBytes('\n')
 		eof = (err == io.EOF)
 		if !eof && err != nil {
 			return nil, err
 		}
 		line = bytes.Trim(line, "\t\n\f\r ")
-		line, err = Subst(line) // Replace environmental variable if exists.
+		line, err = subst(line, envs) // Replace environmental variable if exists.
 		if err != nil {
 			return nil, &Error{Inner: err, Type: "parse", Msg: "line " + strconv.Itoa(current)}
 		}
