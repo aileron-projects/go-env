@@ -116,9 +116,9 @@ operator:
 - `env.ParseReader` works like env.Parse but it takes io.Reader instead
 
 ```go
-err := env.Load()                        // Loads ".env"
-err := env.Load("prod.env")              // Loads custom file
-err := env.Load("common.env", "dev.env") // Loads multiple files
+kvs, err := env.Load()                        // Loads ".env"
+kvs, err := env.Load("prod.env")              // Loads custom file
+kvs, err := env.Load("common.env", "dev.env") // Loads multiple files
 ```
 
 Environmental variable files can be written in the following formats.
@@ -235,7 +235,10 @@ m, err := env.GetenvMap[int]("BAZ", "", "") // map[key1:123 key2:456]
 ## Docs & Examples
 
 - GoDoc: <https://pkg.go.dev/github.com/aileron-projects/go-env>
-- Examples: [example_test.go](./example_test.go)
+- Examples:
+  - [example_test.go](./example_test.go)
+  - Autoload: [examples/autoload/](./examples/autoload/)
+  - Loading env files: [examples/dotenv/](./examples/dotenv/)
 
 ## References
 

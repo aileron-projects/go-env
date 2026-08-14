@@ -12,27 +12,49 @@ import (
 func TestLoad(t *testing.T) {
 	t.Parallel()
 	t.Run("empty", func(t *testing.T) {
-		err := env.Load("testdata/empty.txt")
+		got, err := env.Load("testdata/empty.txt")
 		want := map[string]string{}
 		for k, v := range want {
 			tester.AssertEqual(t, v, os.Getenv(k))
 		}
+		tester.AssertDeepEqual(t, want, got)
 		tester.AssertEqualErr(t, nil, err)
 	})
 	t.Run("non empty", func(t *testing.T) {
-		err := env.Load("testdata/comment.txt")
+		got, err := env.Load("testdata/comment.txt")
 		want := map[string]string{"FOO": "foo"}
 		for k, v := range want {
 			tester.AssertEqual(t, v, os.Getenv(k))
 		}
+		tester.AssertDeepEqual(t, want, got)
+		tester.AssertEqualErr(t, nil, err)
+	})
+	t.Run("multiple files", func(t *testing.T) {
+		got, err := env.Load("testdata/single-line-foo.txt", "testdata/single-line-bar.txt")
+		want := map[string]string{"FOO": "foo", "BAR": "bar"}
+		for k, v := range want {
+			tester.AssertEqual(t, v, os.Getenv(k))
+		}
+		tester.AssertDeepEqual(t, want, got)
+		tester.AssertEqualErr(t, nil, err)
+	})
+	t.Run("duplication", func(t *testing.T) {
+		got, err := env.Load("testdata/single-line-foo.txt", "testdata/single-line-bar.txt", "testdata/single-line-override.txt")
+		want := map[string]string{"FOO": "foooo", "BAR": "baaar", "BAZ": "baz"}
+		for k, v := range want {
+			tester.AssertEqual(t, v, os.Getenv(k))
+		}
+		tester.AssertDeepEqual(t, want, got)
 		tester.AssertEqualErr(t, nil, err)
 	})
 	t.Run("env subst error", func(t *testing.T) {
-		err := env.Load("testdata/env-subst-error.txt")
-		tester.AssertEqualErr(t, &env.Error{Type: "load"}, err)
+		got, err := env.Load("testdata/env-subst-error.txt")
+		tester.AssertDeepEqual(t, nil, got)
+		tester.AssertEqualErr(t, &env.Error{Type: "parse"}, err)
 	})
 	t.Run("read file error", func(t *testing.T) {
-		err := env.Load("testdata/not-exist.txt")
+		got, err := env.Load("testdata/not-exist.txt")
+		tester.AssertDeepEqual(t, nil, got)
 		tester.AssertEqualErr(t, &env.Error{Type: "load"}, err)
 	})
 }
@@ -42,28 +64,61 @@ func TestLoadReader(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
 		f, err := os.Open("testdata/empty.txt")
 		tester.AssertEqualErr(t, nil, err)
-		err = env.LoadReaders(f)
+		got, err := env.LoadReaders(f)
 		want := map[string]string{}
 		for k, v := range want {
 			tester.AssertEqual(t, v, os.Getenv(k))
 		}
+		tester.AssertDeepEqual(t, want, got)
 		tester.AssertEqualErr(t, nil, err)
 	})
 	t.Run("non empty", func(t *testing.T) {
 		f, err := os.Open("testdata/comment.txt")
 		tester.AssertEqualErr(t, nil, err)
-		err = env.LoadReaders(f)
+		got, err := env.LoadReaders(f)
 		want := map[string]string{"FOO": "foo"}
 		for k, v := range want {
 			tester.AssertEqual(t, v, os.Getenv(k))
 		}
+		tester.AssertDeepEqual(t, want, got)
+		tester.AssertEqualErr(t, nil, err)
+	})
+	t.Run("multiple files", func(t *testing.T) {
+		f1, err := os.Open("testdata/single-line-foo.txt")
+		tester.AssertEqualErr(t, nil, err)
+		f2, err := os.Open("testdata/single-line-bar.txt")
+		tester.AssertEqualErr(t, nil, err)
+		got, err := env.LoadReaders(f1, f2)
+		tester.AssertEqualErr(t, nil, err)
+		want := map[string]string{"FOO": "foo", "BAR": "bar"}
+		for k, v := range want {
+			tester.AssertEqual(t, v, os.Getenv(k))
+		}
+		tester.AssertDeepEqual(t, want, got)
+		tester.AssertEqualErr(t, nil, err)
+	})
+	t.Run("duplication", func(t *testing.T) {
+		f1, err := os.Open("testdata/single-line-foo.txt")
+		tester.AssertEqualErr(t, nil, err)
+		f2, err := os.Open("testdata/single-line-bar.txt")
+		tester.AssertEqualErr(t, nil, err)
+		f3, err := os.Open("testdata/single-line-override.txt")
+		tester.AssertEqualErr(t, nil, err)
+		got, err := env.LoadReaders(f1, f2, f3)
+		tester.AssertEqualErr(t, nil, err)
+		want := map[string]string{"FOO": "foooo", "BAR": "baaar", "BAZ": "baz"}
+		for k, v := range want {
+			tester.AssertEqual(t, v, os.Getenv(k))
+		}
+		tester.AssertDeepEqual(t, want, got)
 		tester.AssertEqualErr(t, nil, err)
 	})
 	t.Run("env subst error", func(t *testing.T) {
 		f, err := os.Open("testdata/env-subst-error.txt")
 		tester.AssertEqualErr(t, nil, err)
-		err = env.LoadReaders(f)
-		tester.AssertEqualErr(t, &env.Error{Type: "load"}, err)
+		got, err := env.LoadReaders(f)
+		tester.AssertDeepEqual(t, nil, got)
+		tester.AssertEqualErr(t, &env.Error{Type: "parse"}, err)
 	})
 }
 
@@ -180,6 +235,16 @@ func TestParse(t *testing.T) {
 		txt := `FOO=foo\`
 		m, err := env.Parse([]byte(txt))
 		want := map[string]string{"FOO": "foo\\"}
+		tester.AssertDeepEqual(t, want, m)
+		tester.AssertEqualErr(t, nil, err)
+	})
+	t.Run("duplication", func(t *testing.T) {
+		txt := `
+		FOO=bar
+		FOO=foo
+		`
+		m, err := env.Parse([]byte(txt))
+		want := map[string]string{"FOO": "foo"}
 		tester.AssertDeepEqual(t, want, m)
 		tester.AssertEqualErr(t, nil, err)
 	})

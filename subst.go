@@ -1,65 +1,58 @@
 package env
 
-import "regexp"
-
-var (
-	// envExp is the regular expression that matches to environmental variables.
-	// See the [Resolve] for considered patterns.
-	envExp = `\$\{(` +
-		`[0-9a-zA-Z_]+[@]?[UuLl]?` + `|` +
-		`[#!][0-9a-zA-Z_]+[*@]?` + `|` +
-		`[0-9a-zA-Z_]+[:\-=?+#%/,^][^\$]*` +
-		`)\}`
-	envRe = regexp.MustCompilePOSIX(envExp)
+import (
+	"regexp"
 )
 
-// Subst substitutes environmental variables in the given bytes.
+var (
+	// envPattern = `(` +
+	// 	`[0-9a-zA-Z_]+[@]?[UuLl]?` + `|` +
+	// 	`[#!][0-9a-zA-Z_]+[*@]?` + `|` +
+	// 	`[0-9a-zA-Z_]+[:\-=?+#%/,^][^\$]*` + `)`
+	envRe    = regexp.MustCompile(`\$\{\s*[^{}]*?\s*\}`)
+	envEscRe = regexp.MustCompile(`\\\$\\\{\s*.*?\s*\\\}`)
+)
+
+// Subst substitute environmental variable in the given bytes.
 // See the [Resolve] for available variable syntax.
-// Subst does not support nested variables.
-// Use [Subst2] to allow 2 levels nested variable.
-// Note that escaping variable like '\${FOO}' is not supported.
-func Subst(b []byte) (sb []byte, err error) {
-	defer func() {
-		recover()
-	}()
-	sb = envRe.ReplaceAllFunc(b, func(b []byte) []byte {
-		var s string
-		s, err = Resolve(string(b))
-		if err != nil {
-			sb = nil
-			panic(err)
-		}
-		return []byte(s)
-	})
-	return sb, nil
+// Subst supports nested variables like ${FOO_${BAR}}.
+// Use '\\' to escape the expression. e.g. \$\{FOO\}.
+func Subst(b []byte) ([]byte, error) {
+	return subst(b, nil)
 }
 
-// Subst2 substitute environmental variable in the given bytes.
-// See the [Resolve] for available variable syntax.
-// Subst does support nested variables up to 2 levels.
-// ${FOO_${BAR}} is allowed but ${FOO_${BAR_${BAZ}}}} is not allowed.
-// Note that escaping variable like '\${FOO}' is not supported.
-func Subst2(b []byte) (sb []byte, err error) {
+func subst(b []byte, priority map[string]string) (sb []byte, err error) {
 	defer func() {
 		recover()
 	}()
-	sb = envRe.ReplaceAllFunc(b, func(b []byte) []byte {
-		var s string
-		s, err = Resolve(string(b))
-		if err != nil {
-			sb = nil
-			panic(err)
-		}
-		return []byte(s)
-	})
-	sb = envRe.ReplaceAllFunc(sb, func(b []byte) []byte {
-		var s string
-		s, err = Resolve(string(b))
-		if err != nil {
-			sb = nil
-			panic(err)
-		}
-		return []byte(s)
-	})
+	sb = b
+	left := 10 // Max repeat.
+	found := true
+	for left > 0 && found {
+		left -= 1
+		found = false
+		sb = envRe.ReplaceAllFunc(sb, func(b []byte) []byte {
+			found = true
+			s, e := resolve(string(b), priority)
+			if e != nil {
+				sb = nil
+				err = e
+				panic(e)
+			}
+			return []byte(s)
+		})
+	}
+	left = 10 // Max repeat.
+	found = true
+	for left > 0 && found {
+		left -= 1
+		found = false
+		sb = envEscRe.ReplaceAllFunc(sb, func(b []byte) []byte {
+			found = true
+			b = b[2 : len(b)-1] // Reuse the buffer.
+			b[0], b[1], b[len(b)-1] = '$', '{', '}'
+			return b
+		})
+	}
 	return sb, nil
 }

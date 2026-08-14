@@ -6,7 +6,7 @@ import "github.com/aileron-projects/go-env"
 var FilePath = ".env"
 
 func init() {
-	if err := env.Load(FilePath); err != nil {
+	if _, err := env.Load(FilePath); err != nil {
 		panic(err)
 	}
 }

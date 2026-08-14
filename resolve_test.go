@@ -16,35 +16,36 @@ func TestResolve(t *testing.T) {
 	}{
 		"case01": {"", "", expressionError("")},
 		"case02": {"BAD", "", expressionError("")},
-		"case03": {"${!prefix}", "", expressionError("")},
-		"case04": {"${/*pattern/string}", "", expressionError("")},
-		"case05": {"${parameter*other}", "", expressionError("")},
-		"case06": {"${!TestResolve*}", "TestResolve TestResolve_Cap", nil},
-		"case07": {"${!TestResolve@}", "TestResolve TestResolve_Cap", nil},
-		"case08": {"${#TestResolve}", "4", nil},
-		"case09": {"${TestResolve_UnDef:-word}", "word", nil},
-		"case10": {"${TestResolve_UnDef-word}", "word", nil},
-		"case11": {"${TestResolve:=word}", "test", nil},
-		"case12": {"${TestResolve=word}", "test", nil},
-		"case13": {"${TestResolve:?word}", "test", nil},
-		"case14": {"${TestResolve?word}", "test", nil},
-		"case15": {"${TestResolve:+word}", "word", nil},
-		"case16": {"${TestResolve+word}", "word", nil},
-		"case17": {"${TestResolve:2}", "st", nil},
-		"case18": {"${TestResolve:1:2}", "es", nil},
-		"case19": {"${TestResolve#t}", "est", nil},
-		"case20": {"${TestResolve##t}", "est", nil},
-		"case21": {"${TestResolve%t}", "tes", nil},
-		"case22": {"${TestResolve%%t}", "tes", nil},
-		"case23": {"${TestResolve/[t]/T}", "Test", nil},
-		"case24": {"${TestResolve//[^t]/X}", "tXXt", nil},
-		"case25": {"${TestResolve_Cap/#[T]/t}", "tEST", nil},
-		"case26": {"${TestResolve_Cap/%[T]/t}", "TESt", nil},
-		"case27": {"${TestResolve^[t]}", "Test", nil},
-		"case28": {"${TestResolve^^[^t]}", "tESt", nil},
-		"case29": {"${TestResolve_Cap,[T]}", "tEST", nil},
-		"case30": {"${TestResolve_Cap,,[^T]}", "TesT", nil},
-		"case31": {"${TestResolve@U}", "TEST", nil},
+		"case03": {"${}", "", expressionError("")},
+		"case04": {"${!prefix}", "", expressionError("")},
+		"case05": {"${/*pattern/string}", "", expressionError("")},
+		"case06": {"${parameter*other}", "", expressionError("")},
+		"case07": {"${!TestResolve*}", "TestResolve TestResolve_Cap", nil},
+		"case08": {"${!TestResolve@}", "TestResolve TestResolve_Cap", nil},
+		"case09": {"${#TestResolve}", "4", nil},
+		"case10": {"${TestResolve_UnDef:-word}", "word", nil},
+		"case11": {"${TestResolve_UnDef-word}", "word", nil},
+		"case12": {"${TestResolve:=word}", "test", nil},
+		"case13": {"${TestResolve=word}", "test", nil},
+		"case14": {"${TestResolve:?word}", "test", nil},
+		"case15": {"${TestResolve?word}", "test", nil},
+		"case16": {"${TestResolve:+word}", "word", nil},
+		"case17": {"${TestResolve+word}", "word", nil},
+		"case18": {"${TestResolve:2}", "st", nil},
+		"case19": {"${TestResolve:1:2}", "es", nil},
+		"case20": {"${TestResolve#t}", "est", nil},
+		"case21": {"${TestResolve##t}", "est", nil},
+		"case22": {"${TestResolve%t}", "tes", nil},
+		"case23": {"${TestResolve%%t}", "tes", nil},
+		"case24": {"${TestResolve/[t]/T}", "Test", nil},
+		"case25": {"${TestResolve//[^t]/X}", "tXXt", nil},
+		"case26": {"${TestResolve_Cap/#[T]/t}", "tEST", nil},
+		"case27": {"${TestResolve_Cap/%[T]/t}", "TESt", nil},
+		"case28": {"${TestResolve^[t]}", "Test", nil},
+		"case29": {"${TestResolve^^[^t]}", "tESt", nil},
+		"case30": {"${TestResolve_Cap,[T]}", "tEST", nil},
+		"case31": {"${TestResolve_Cap,,[^T]}", "TesT", nil},
+		"case32": {"${TestResolve@U}", "TEST", nil},
 	}
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
@@ -70,7 +71,7 @@ func TestResolveGroup1(t *testing.T) {
 	}
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
-			v, err := resolveGroup1(tc.o)
+			v, err := resolveGroup1(tc.o, nil)
 			tester.AssertEqual(t, tc.result, v)
 			tester.AssertEqualErr(t, tc.err, err)
 		})
@@ -100,7 +101,7 @@ func TestResolveGroup2(t *testing.T) {
 	}
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
-			v, err := resolveGroup2(tc.p, tc.o)
+			v, err := resolveGroup2(tc.p, tc.o, nil)
 			tester.AssertEqual(t, tc.result, v)
 			tester.AssertEqualErr(t, tc.err, err)
 		})
@@ -123,7 +124,7 @@ func TestResolveGroup3(t *testing.T) {
 	}
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
-			v, err := resolveGroup3(tc.p, tc.o)
+			v, err := resolveGroup3(tc.p, tc.o, nil)
 			tester.AssertEqual(t, tc.result, v)
 			tester.AssertEqualErr(t, tc.err, err)
 		})
@@ -147,7 +148,7 @@ func TestResolveGroup4(t *testing.T) {
 	}
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
-			v, err := resolveGroup4(tc.p, tc.o)
+			v, err := resolveGroup4(tc.p, tc.o, nil)
 			tester.AssertEqual(t, tc.result, v)
 			tester.AssertEqualErr(t, tc.err, err)
 		})
@@ -171,7 +172,7 @@ func TestResolveGroup5(t *testing.T) {
 	}
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
-			v, err := resolveGroup5(tc.p, tc.o)
+			v, err := resolveGroup5(tc.p, tc.o, nil)
 			tester.AssertEqual(t, tc.result, v)
 			tester.AssertEqualErr(t, tc.err, err)
 		})

@@ -46,19 +46,22 @@ func TestEnv01(t *testing.T) {
 		"p set not null": {"abc", "TestEnv01", "abc", nil},
 		"p set but null": {"", "TestEnv01", "", nil},
 		"p not set":      {"", "TestEnv01_NotSet", "", nil},
-		"invalid name":   {"", "TestEnv--", "", syntaxError(nil, pattern, "", "")},
+		"invalid name":   {"", "TestEnv01--", "", syntaxError(nil, pattern, "", "")},
 	}
-
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("TestEnv01", tc.preset)
-			got, err := env01(tc.p)
+			got, err := env01(tc.p, nil)
 			tester.AssertEqual(t, tc.want, got)
-			if tc.err != nil {
-				tester.AssertEqualErr(t, tc.err, err)
-			}
+			tester.AssertEqualErr(t, tc.err, err)
 		})
 	}
+	t.Run("priority", func(t *testing.T) {
+		t.Setenv("TestEnv01", "foo")
+		got, err := env01("TestEnv01", map[string]string{"TestEnv01": "bar"})
+		tester.AssertEqual(t, "bar", got)
+		tester.AssertEqualErr(t, nil, err)
+	})
 }
 
 func TestEnv02(t *testing.T) {
@@ -74,17 +77,20 @@ func TestEnv02(t *testing.T) {
 		"p not set":      {"", "TestEnv02_NotSet", "word", "word", nil},
 		"invalid name":   {"", "TestEnv--", "word", "", syntaxError(nil, pattern, "", "")},
 	}
-
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("TestEnv02", tc.preset)
-			got, err := env02(tc.p, tc.w)
+			got, err := env02(tc.p, tc.w, nil)
 			tester.AssertEqual(t, tc.want, got)
-			if tc.err != nil {
-				tester.AssertEqualErr(t, tc.err, err)
-			}
+			tester.AssertEqualErr(t, tc.err, err)
 		})
 	}
+	t.Run("priority", func(t *testing.T) {
+		t.Setenv("TestEnv02", "foo")
+		got, err := env02("TestEnv02", "word", map[string]string{"TestEnv02": "bar"})
+		tester.AssertEqual(t, "bar", got)
+		tester.AssertEqualErr(t, nil, err)
+	})
 }
 
 func TestEnv03(t *testing.T) {
@@ -100,17 +106,20 @@ func TestEnv03(t *testing.T) {
 		"p not set":      {"", "TestEnv03_NotSet", "word", "word", nil},
 		"invalid name":   {"", "TestEnv--", "word", "", syntaxError(nil, pattern, "", "")},
 	}
-
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("TestEnv03", tc.preset)
-			got, err := env03(tc.p, tc.w)
+			got, err := env03(tc.p, tc.w, nil)
 			tester.AssertEqual(t, tc.want, got)
-			if tc.err != nil {
-				tester.AssertEqualErr(t, tc.err, err)
-			}
+			tester.AssertEqualErr(t, tc.err, err)
 		})
 	}
+	t.Run("priority", func(t *testing.T) {
+		t.Setenv("TestEnv03", "foo")
+		got, err := env03("TestEnv03", "word", map[string]string{"TestEnv03": "bar"})
+		tester.AssertEqual(t, "bar", got)
+		tester.AssertEqualErr(t, nil, err)
+	})
 }
 
 func TestEnv04(t *testing.T) {
@@ -126,17 +135,20 @@ func TestEnv04(t *testing.T) {
 		"p not set":      {"", "TestEnv04_NotSet", "word", "word", nil},
 		"invalid name":   {"", "TestEnv--", "word", "", syntaxError(nil, pattern, "", "")},
 	}
-
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("TestEnv04", tc.preset)
-			got, err := env04(tc.p, tc.w)
+			got, err := env04(tc.p, tc.w, nil)
 			tester.AssertEqual(t, tc.want, got)
-			if tc.err != nil {
-				tester.AssertEqualErr(t, tc.err, err)
-			}
+			tester.AssertEqualErr(t, tc.err, err)
 		})
 	}
+	t.Run("priority", func(t *testing.T) {
+		t.Setenv("TestEnv04", "foo")
+		got, err := env04("TestEnv04", "word", map[string]string{"TestEnv04": "bar"})
+		tester.AssertEqual(t, "bar", got)
+		tester.AssertEqualErr(t, nil, err)
+	})
 }
 
 func TestEnv05(t *testing.T) {
@@ -152,17 +164,20 @@ func TestEnv05(t *testing.T) {
 		"p not set":      {"", "TestEnv05_NotSet", "word", "word", nil},
 		"invalid name":   {"", "TestEnv--", "word", "", syntaxError(nil, pattern, "", "")},
 	}
-
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("TestEnv05", tc.preset)
-			got, err := env05(tc.p, tc.w)
+			got, err := env05(tc.p, tc.w, nil)
 			tester.AssertEqual(t, tc.want, got)
-			if tc.err != nil {
-				tester.AssertEqualErr(t, tc.err, err)
-			}
+			tester.AssertEqualErr(t, tc.err, err)
 		})
 	}
+	t.Run("priority", func(t *testing.T) {
+		t.Setenv("TestEnv05", "foo")
+		got, err := env05("TestEnv05", "word", map[string]string{"TestEnv05": "bar"})
+		tester.AssertEqual(t, "bar", got)
+		tester.AssertEqualErr(t, nil, err)
+	})
 }
 
 func TestEnv06(t *testing.T) {
@@ -178,17 +193,20 @@ func TestEnv06(t *testing.T) {
 		"p not set":      {"", "TestEnv06_NotSet", "word", "", substitutionError(pattern, "", "")},
 		"invalid name":   {"", "TestEnv--", "word", "", syntaxError(nil, pattern, "", "")},
 	}
-
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("TestEnv06", tc.preset)
-			got, err := env06(tc.p, tc.w)
+			got, err := env06(tc.p, tc.w, nil)
 			tester.AssertEqual(t, tc.want, got)
-			if tc.err != nil {
-				tester.AssertEqualErr(t, tc.err, err)
-			}
+			tester.AssertEqualErr(t, tc.err, err)
 		})
 	}
+	t.Run("priority", func(t *testing.T) {
+		t.Setenv("TestEnv06", "foo")
+		got, err := env06("TestEnv06", "word", map[string]string{"TestEnv06": "bar"})
+		tester.AssertEqual(t, "bar", got)
+		tester.AssertEqualErr(t, nil, err)
+	})
 }
 
 func TestEnv07(t *testing.T) {
@@ -204,17 +222,20 @@ func TestEnv07(t *testing.T) {
 		"p not set":      {"", "TestEnv07_NotSet", "word", "", substitutionError(pattern, "", "")},
 		"invalid name":   {"", "TestEnv--", "word", "", syntaxError(nil, pattern, "", "")},
 	}
-
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("TestEnv07", tc.preset)
-			got, err := env07(tc.p, tc.w)
+			got, err := env07(tc.p, tc.w, nil)
 			tester.AssertEqual(t, tc.want, got)
-			if tc.err != nil {
-				tester.AssertEqualErr(t, tc.err, err)
-			}
+			tester.AssertEqualErr(t, tc.err, err)
 		})
 	}
+	t.Run("priority", func(t *testing.T) {
+		t.Setenv("TestEnv03", "foo")
+		got, err := env07("TestEnv07", "word", map[string]string{"TestEnv07": "bar"})
+		tester.AssertEqual(t, "bar", got)
+		tester.AssertEqualErr(t, nil, err)
+	})
 }
 
 func TestEnv08(t *testing.T) {
@@ -230,17 +251,19 @@ func TestEnv08(t *testing.T) {
 		"p not set":      {"", "TestEnv08_NotSet", "word", "", nil},
 		"invalid name":   {"", "TestEnv--", "word", "", syntaxError(nil, pattern, "", "")},
 	}
-
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("TestEnv08", tc.preset)
-			got, err := env08(tc.p, tc.w)
+			got, err := env08(tc.p, tc.w, nil)
 			tester.AssertEqual(t, tc.want, got)
-			if tc.err != nil {
-				tester.AssertEqualErr(t, tc.err, err)
-			}
+			tester.AssertEqualErr(t, tc.err, err)
 		})
 	}
+	t.Run("priority", func(t *testing.T) {
+		got, err := env08("TestEnv08", "word", map[string]string{"TestEnv08": "bar"})
+		tester.AssertEqual(t, "word", got)
+		tester.AssertEqualErr(t, nil, err)
+	})
 }
 
 func TestEnv09(t *testing.T) {
@@ -256,17 +279,19 @@ func TestEnv09(t *testing.T) {
 		"p not set":      {"", "TestEnv09_NotSet", "word", "", nil},
 		"invalid name":   {"", "TestEnv--", "word", "", syntaxError(nil, pattern, "", "")},
 	}
-
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("TestEnv09", tc.preset)
-			got, err := env09(tc.p, tc.w)
+			got, err := env09(tc.p, tc.w, nil)
 			tester.AssertEqual(t, tc.want, got)
-			if tc.err != nil {
-				tester.AssertEqualErr(t, tc.err, err)
-			}
+			tester.AssertEqualErr(t, tc.err, err)
 		})
 	}
+	t.Run("priority", func(t *testing.T) {
+		got, err := env09("TestEnv09", "word", map[string]string{"TestEnv09": "bar"})
+		tester.AssertEqual(t, "word", got)
+		tester.AssertEqualErr(t, nil, err)
+	})
 }
 
 func TestEnv10(t *testing.T) {
@@ -290,17 +315,20 @@ func TestEnv10(t *testing.T) {
 		"case10": {"abcde", "TestEnv--", "1", "", syntaxError(nil, pattern, "", "")},
 		"case11": {"abcde", "TestEnv10", "x", "", syntaxError(nil, pattern, "", "")},
 	}
-
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("TestEnv10", tc.preset)
-			got, err := env10(tc.p, tc.o)
+			got, err := env10(tc.p, tc.o, nil)
 			tester.AssertEqual(t, tc.want, got)
-			if tc.err != nil {
-				tester.AssertEqualErr(t, tc.err, err)
-			}
+			tester.AssertEqualErr(t, tc.err, err)
 		})
 	}
+	t.Run("priority", func(t *testing.T) {
+		t.Setenv("TestEnv10", "foo")
+		got, err := env10("TestEnv10", "1", map[string]string{"TestEnv10": "bar"})
+		tester.AssertEqual(t, "ar", got)
+		tester.AssertEqualErr(t, nil, err)
+	})
 }
 
 func TestEnv11(t *testing.T) {
@@ -344,17 +372,20 @@ func TestEnv11(t *testing.T) {
 		"case30": {"abcde", "TestEnv11", "x", "2", "", syntaxError(nil, pattern, "", "")},
 		"case31": {"abcde", "TestEnv11", "1", "x", "", syntaxError(nil, pattern, "", "")},
 	}
-
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("TestEnv11", tc.preset)
-			got, err := env11(tc.p, tc.o, tc.l)
+			got, err := env11(tc.p, tc.o, tc.l, nil)
 			tester.AssertEqual(t, tc.want, got)
-			if tc.err != nil {
-				tester.AssertEqualErr(t, tc.err, err)
-			}
+			tester.AssertEqualErr(t, tc.err, err)
 		})
 	}
+	t.Run("priority", func(t *testing.T) {
+		t.Setenv("TestEnv11", "foo")
+		got, err := env11("TestEnv11", "1", "2", map[string]string{"TestEnv11": "bar"})
+		tester.AssertEqual(t, "ar", got)
+		tester.AssertEqualErr(t, nil, err)
+	})
 }
 
 func TestEnv12(t *testing.T) {
@@ -371,18 +402,21 @@ func TestEnv12(t *testing.T) {
 		"case03": {"abc", "TestEnvNotFound", "", nil},
 		"case04": {"abc", "TestEnv--", "", syntaxError(nil, pattern, "", "")},
 	}
-
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("TestEnv12_var1", tc.preset)
 			t.Setenv("TestEnv12_var2", tc.preset)
-			got, err := env12(tc.p)
+			got, err := env12(tc.p, nil)
 			tester.AssertEqual(t, tc.want, got)
-			if tc.err != nil {
-				tester.AssertEqualErr(t, tc.err, err)
-			}
+			tester.AssertEqualErr(t, tc.err, err)
 		})
 	}
+	t.Run("priority", func(t *testing.T) {
+		t.Setenv("TestEnv12_var1", "foo")
+		got, err := env12("TestEnv12", map[string]string{"TestEnv12_var2": "bar"})
+		tester.AssertEqual(t, "TestEnv12_var1 TestEnv12_var2", got)
+		tester.AssertEqualErr(t, nil, err)
+	})
 }
 
 func TestEnv13(t *testing.T) {
@@ -399,18 +433,21 @@ func TestEnv13(t *testing.T) {
 		"case03": {"abc", "TestEnvNotFound", "", nil},
 		"case04": {"abc", "TestEnv--", "", syntaxError(nil, pattern, "", "")},
 	}
-
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("TestEnv13_var1", tc.preset)
 			t.Setenv("TestEnv13_var2", tc.preset)
-			got, err := env13(tc.p)
+			got, err := env13(tc.p, nil)
 			tester.AssertEqual(t, tc.want, got)
-			if tc.err != nil {
-				tester.AssertEqualErr(t, tc.err, err)
-			}
+			tester.AssertEqualErr(t, tc.err, err)
 		})
 	}
+	t.Run("priority", func(t *testing.T) {
+		t.Setenv("TestEnv13_var1", "foo")
+		got, err := env13("TestEnv13", map[string]string{"TestEnv13_var2": "bar"})
+		tester.AssertEqual(t, "TestEnv13_var1 TestEnv13_var2", got)
+		tester.AssertEqualErr(t, nil, err)
+	})
 }
 
 func TestEnv14(t *testing.T) {
@@ -427,17 +464,20 @@ func TestEnv14(t *testing.T) {
 		"case03": {"あいうえお", "TestEnv14", "5", nil},
 		"case14": {"abc", "TestEnv--", "", syntaxError(nil, pattern, "", "")},
 	}
-
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("TestEnv14", tc.preset)
-			got, err := env14(tc.p)
+			got, err := env14(tc.p, nil)
 			tester.AssertEqual(t, tc.want, got)
-			if tc.err != nil {
-				tester.AssertEqualErr(t, tc.err, err)
-			}
+			tester.AssertEqualErr(t, tc.err, err)
 		})
 	}
+	t.Run("priority", func(t *testing.T) {
+		t.Setenv("TestEnv14", "foo")
+		got, err := env14("TestEnv14", map[string]string{"TestEnv14": "barbaz"})
+		tester.AssertEqual(t, "6", got)
+		tester.AssertEqualErr(t, nil, err)
+	})
 }
 
 func TestEnv15(t *testing.T) {
@@ -452,17 +492,20 @@ func TestEnv15(t *testing.T) {
 		"case01": {"aabcc", "TestEnv15", "a*", "bcc", nil},
 		"case02": {"aabcc", "TestEnv--", "", "", syntaxError(nil, pattern, "", "")},
 	}
-
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("TestEnv15", tc.preset)
-			got, err := env15(tc.p, tc.w)
+			got, err := env15(tc.p, tc.w, nil)
 			tester.AssertEqual(t, tc.want, got)
-			if tc.err != nil {
-				tester.AssertEqualErr(t, tc.err, err)
-			}
+			tester.AssertEqualErr(t, tc.err, err)
 		})
 	}
+	t.Run("priority", func(t *testing.T) {
+		t.Setenv("TestEnv15", "foo")
+		got, err := env15("TestEnv15", "b*", map[string]string{"TestEnv15": "bar"})
+		tester.AssertEqual(t, "ar", got)
+		tester.AssertEqualErr(t, nil, err)
+	})
 }
 
 func TestEnv16(t *testing.T) {
@@ -491,17 +534,20 @@ func TestEnv16(t *testing.T) {
 		"case15": {"aabcc", "TestEnv16", "a*", "bcc", nil},
 		"case16": {"aabcc", "TestEnv16", "[a-b]*", "cc", nil},
 	}
-
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("TestEnv16", tc.preset)
-			got, err := env16(tc.p, tc.w)
+			got, err := env16(tc.p, tc.w, nil)
 			tester.AssertEqual(t, tc.want, got)
-			if tc.err != nil {
-				tester.AssertEqualErr(t, tc.err, err)
-			}
+			tester.AssertEqualErr(t, tc.err, err)
 		})
 	}
+	t.Run("priority", func(t *testing.T) {
+		t.Setenv("TestEnv16", "foo")
+		got, err := env16("TestEnv16", "b", map[string]string{"TestEnv16": "bar"})
+		tester.AssertEqual(t, "ar", got)
+		tester.AssertEqualErr(t, nil, err)
+	})
 }
 
 func TestEnv17(t *testing.T) {
@@ -516,17 +562,20 @@ func TestEnv17(t *testing.T) {
 		"case01": {"aabcc", "TestEnv17", "c*", "aab", nil},
 		"case02": {"aabcc", "TestEnv--", "", "", syntaxError(nil, pattern, "", "")},
 	}
-
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("TestEnv17", tc.preset)
-			got, err := env17(tc.p, tc.w)
+			got, err := env17(tc.p, tc.w, nil)
 			tester.AssertEqual(t, tc.want, got)
-			if tc.err != nil {
-				tester.AssertEqualErr(t, tc.err, err)
-			}
+			tester.AssertEqualErr(t, tc.err, err)
 		})
 	}
+	t.Run("priority", func(t *testing.T) {
+		t.Setenv("TestEnv17", "foo")
+		got, err := env17("TestEnv17", "r", map[string]string{"TestEnv17": "bar"})
+		tester.AssertEqual(t, "ba", got)
+		tester.AssertEqualErr(t, nil, err)
+	})
 }
 
 func TestEnv18(t *testing.T) {
@@ -556,17 +605,20 @@ func TestEnv18(t *testing.T) {
 		"case15": {"aabcc", "TestEnv18", "c*", "aab", nil},
 		"case16": {"aabcc", "TestEnv18", "[b-c]*", "aa", nil},
 	}
-
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("TestEnv18", tc.preset)
-			got, err := env18(tc.p, tc.w)
+			got, err := env18(tc.p, tc.w, nil)
 			tester.AssertEqual(t, tc.want, got)
-			if tc.err != nil {
-				tester.AssertEqualErr(t, tc.err, err)
-			}
+			tester.AssertEqualErr(t, tc.err, err)
 		})
 	}
+	t.Run("priority", func(t *testing.T) {
+		t.Setenv("TestEnv18", "foo")
+		got, err := env18("TestEnv18", "r", map[string]string{"TestEnv18": "bar"})
+		tester.AssertEqual(t, "ba", got)
+		tester.AssertEqualErr(t, nil, err)
+	})
 }
 
 func TestEnv19(t *testing.T) {
@@ -595,17 +647,20 @@ func TestEnv19(t *testing.T) {
 		"case13": {"abcabc", "TestEnv19", "[", "", "", syntaxError(nil, pattern, "", "")},
 		"case14": {"abcabc", "TestEnv--", "", "", "", syntaxError(nil, pattern, "", "")},
 	}
-
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("TestEnv19", tc.preset)
-			got, err := env19(tc.p, tc.w, tc.s)
+			got, err := env19(tc.p, tc.w, tc.s, nil)
 			tester.AssertEqual(t, tc.want, got)
-			if tc.err != nil {
-				tester.AssertEqualErr(t, tc.err, err)
-			}
+			tester.AssertEqualErr(t, tc.err, err)
 		})
 	}
+	t.Run("priority", func(t *testing.T) {
+		t.Setenv("TestEnv19", "foo")
+		got, err := env19("TestEnv19", "r", "z", map[string]string{"TestEnv19": "bar"})
+		tester.AssertEqual(t, "baz", got)
+		tester.AssertEqualErr(t, nil, err)
+	})
 }
 
 func TestEnv20(t *testing.T) {
@@ -634,17 +689,20 @@ func TestEnv20(t *testing.T) {
 		"case13": {"abcabc", "TestEnv20", "[", "", "", syntaxError(nil, pattern, "", "")},
 		"case14": {"abcabc", "TestEnv--", "", "", "", syntaxError(nil, pattern, "", "")},
 	}
-
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("TestEnv20", tc.preset)
-			got, err := env20(tc.p, tc.w, tc.s)
+			got, err := env20(tc.p, tc.w, tc.s, nil)
 			tester.AssertEqual(t, tc.want, got)
-			if tc.err != nil {
-				tester.AssertEqualErr(t, tc.err, err)
-			}
+			tester.AssertEqualErr(t, tc.err, err)
 		})
 	}
+	t.Run("priority", func(t *testing.T) {
+		t.Setenv("TestEnv20", "foo")
+		got, err := env20("TestEnv20", "r", "z", map[string]string{"TestEnv20": "bar"})
+		tester.AssertEqual(t, "baz", got)
+		tester.AssertEqualErr(t, nil, err)
+	})
 }
 
 func TestEnv21(t *testing.T) {
@@ -673,17 +731,20 @@ func TestEnv21(t *testing.T) {
 		"case13": {"abcabc", "TestEnv21", "[", "", "", syntaxError(nil, pattern, "", "")},
 		"case14": {"abcabc", "TestEnv--", "", "", "", syntaxError(nil, pattern, "", "")},
 	}
-
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("TestEnv21", tc.preset)
-			got, err := env21(tc.p, tc.w, tc.s)
+			got, err := env21(tc.p, tc.w, tc.s, nil)
 			tester.AssertEqual(t, tc.want, got)
-			if tc.err != nil {
-				tester.AssertEqualErr(t, tc.err, err)
-			}
+			tester.AssertEqualErr(t, tc.err, err)
 		})
 	}
+	t.Run("priority", func(t *testing.T) {
+		t.Setenv("TestEnv21", "foo")
+		got, err := env21("TestEnv21", "b", "c", map[string]string{"TestEnv21": "bar"})
+		tester.AssertEqual(t, "car", got)
+		tester.AssertEqualErr(t, nil, err)
+	})
 }
 
 func TestEnv22(t *testing.T) {
@@ -712,17 +773,20 @@ func TestEnv22(t *testing.T) {
 		"case13": {"abcabc", "TestEnv22", "?", "", "", syntaxError(nil, pattern, "", "")},
 		"case14": {"abcabc", "TestEnv--", "", "", "", syntaxError(nil, pattern, "", "")},
 	}
-
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("TestEnv22", tc.preset)
-			got, err := env22(tc.p, tc.w, tc.s)
+			got, err := env22(tc.p, tc.w, tc.s, nil)
 			tester.AssertEqual(t, tc.want, got)
-			if tc.err != nil {
-				tester.AssertEqualErr(t, tc.err, err)
-			}
+			tester.AssertEqualErr(t, tc.err, err)
 		})
 	}
+	t.Run("priority", func(t *testing.T) {
+		t.Setenv("TestEnv22", "foo")
+		got, err := env22("TestEnv22", "r", "z", map[string]string{"TestEnv22": "bar"})
+		tester.AssertEqual(t, "baz", got)
+		tester.AssertEqualErr(t, nil, err)
+	})
 }
 
 func TestEnv23(t *testing.T) {
@@ -753,17 +817,20 @@ func TestEnv23(t *testing.T) {
 		"case16": {"abcabc", "TestEnv23", "^a", "Abcabc", nil},
 		"case17": {"abcabc", "TestEnv23", "a$", "Abcabc", nil},
 	}
-
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("TestEnv23", tc.preset)
-			got, err := env23(tc.p, tc.w)
+			got, err := env23(tc.p, tc.w, nil)
 			tester.AssertEqual(t, tc.want, got)
-			if tc.err != nil {
-				tester.AssertEqualErr(t, tc.err, err)
-			}
+			tester.AssertEqualErr(t, tc.err, err)
 		})
 	}
+	t.Run("priority", func(t *testing.T) {
+		t.Setenv("TestEnv23", "foo")
+		got, err := env23("TestEnv23", "b", map[string]string{"TestEnv23": "bar"})
+		tester.AssertEqual(t, "Bar", got)
+		tester.AssertEqualErr(t, nil, err)
+	})
 }
 
 func TestEnv24(t *testing.T) {
@@ -792,17 +859,20 @@ func TestEnv24(t *testing.T) {
 		"case14": {"abcabc", "TestEnv24", "?", "", syntaxError(nil, pattern, "", "")},
 		"case15": {"abcabc", "TestEnv--", "", "", syntaxError(nil, pattern, "", "")},
 	}
-
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("TestEnv24", tc.preset)
-			got, err := env24(tc.p, tc.w)
+			got, err := env24(tc.p, tc.w, nil)
 			tester.AssertEqual(t, tc.want, got)
-			if tc.err != nil {
-				tester.AssertEqualErr(t, tc.err, err)
-			}
+			tester.AssertEqualErr(t, tc.err, err)
 		})
 	}
+	t.Run("priority", func(t *testing.T) {
+		t.Setenv("TestEnv24", "foo")
+		got, err := env24("TestEnv24", "b", map[string]string{"TestEnv24": "bar"})
+		tester.AssertEqual(t, "Bar", got)
+		tester.AssertEqualErr(t, nil, err)
+	})
 }
 
 func TestEnv25(t *testing.T) {
@@ -833,17 +903,20 @@ func TestEnv25(t *testing.T) {
 		"case16": {"ABCABC", "TestEnv25", "^A", "aBCABC", nil},
 		"case17": {"ABCABC", "TestEnv25", "A$", "aBCABC", nil},
 	}
-
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("TestEnv25", tc.preset)
-			got, err := env25(tc.p, tc.w)
+			got, err := env25(tc.p, tc.w, nil)
 			tester.AssertEqual(t, tc.want, got)
-			if tc.err != nil {
-				tester.AssertEqualErr(t, tc.err, err)
-			}
+			tester.AssertEqualErr(t, tc.err, err)
 		})
 	}
+	t.Run("priority", func(t *testing.T) {
+		t.Setenv("TestEnv25", "foo")
+		got, err := env25("TestEnv25", "B", map[string]string{"TestEnv25": "BAR"})
+		tester.AssertEqual(t, "bAR", got)
+		tester.AssertEqualErr(t, nil, err)
+	})
 }
 
 func TestEnv26(t *testing.T) {
@@ -872,17 +945,20 @@ func TestEnv26(t *testing.T) {
 		"case14": {"ABCABC", "TestEnv26", "?", "", syntaxError(nil, pattern, "", "")},
 		"case15": {"ABCABC", "TestEnv--", "", "", syntaxError(nil, pattern, "", "")},
 	}
-
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("TestEnv26", tc.preset)
-			got, err := env26(tc.p, tc.w)
+			got, err := env26(tc.p, tc.w, nil)
 			tester.AssertEqual(t, tc.want, got)
-			if tc.err != nil {
-				tester.AssertEqualErr(t, tc.err, err)
-			}
+			tester.AssertEqualErr(t, tc.err, err)
 		})
 	}
+	t.Run("priority", func(t *testing.T) {
+		t.Setenv("TestEnv26", "foo")
+		got, err := env26("TestEnv26", "B", map[string]string{"TestEnv26": "BAR"})
+		tester.AssertEqual(t, "bAR", got)
+		tester.AssertEqualErr(t, nil, err)
+	})
 }
 
 func TestEnv27(t *testing.T) {
@@ -905,15 +981,18 @@ func TestEnv27(t *testing.T) {
 		"case08": {"abcABC", "TestEnv27", "X", "", syntaxError(nil, pattern, "", "")},
 		"case09": {"abcABC", "TestEnv--", "", "", syntaxError(nil, pattern, "", "")},
 	}
-
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("TestEnv27", tc.preset)
-			got, err := env27(tc.p, tc.o)
+			got, err := env27(tc.p, tc.o, nil)
 			tester.AssertEqual(t, tc.want, got)
-			if tc.err != nil {
-				tester.AssertEqualErr(t, tc.err, err)
-			}
+			tester.AssertEqualErr(t, tc.err, err)
 		})
 	}
+	t.Run("priority", func(t *testing.T) {
+		t.Setenv("TestEnv27", "foo")
+		got, err := env27("TestEnv27", "U", map[string]string{"TestEnv27": "bar"})
+		tester.AssertEqual(t, "BAR", got)
+		tester.AssertEqualErr(t, nil, err)
+	})
 }
