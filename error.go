@@ -23,9 +23,6 @@ func (e *Error) Error() string {
 }
 
 func (e *Error) Is(target error) bool {
-	if e == nil {
-		return e == target
-	}
 	ee, ok := target.(*Error)
 	if ok {
 		return e.Type == ee.Type
