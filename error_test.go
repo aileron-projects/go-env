@@ -26,26 +26,44 @@ func TestError(t *testing.T) {
 		msg := err.Error()
 		tester.AssertEqual(t, "go-env/env: type: [EOF]", msg)
 	})
-	t.Run("errors equal", func(t *testing.T) {
-		err1 := &Error{Type: "type", Msg: "aaa", Inner: nil}
-		err2 := &Error{Type: "type", Msg: "bbb", Inner: io.EOF}
-		tester.AssertEqualErr(t, err1, err2)
+	t.Run("nil error", func(t *testing.T) {
+		var err *Error
+		tester.AssertEqual(t, false, err.Is(nil))
 	})
-	t.Run("wrapped error equal", func(t *testing.T) {
-		err1 := &Error{Type: "type", Msg: "aaa", Inner: nil}
-		err2 := &Error{Type: "type", Msg: "bbb", Inner: io.EOF}
-		err3 := fmt.Errorf("outer error [%w]", err2)
-		tester.AssertEqual(t, true, err1.Is(err3))
-		tester.AssertEqualErr(t, err1, err3)
+	t.Run("nil target", func(t *testing.T) {
+		err := &Error{Type: "type", Msg: "aaa", Inner: nil}
+		tester.AssertEqual(t, false, err.Is(nil))
+	})
+	t.Run("errors equal", func(t *testing.T) {
+		target := &Error{Type: "type", Msg: "aaa", Inner: nil}
+		err := &Error{Type: "type", Msg: "bbb", Inner: io.EOF}
+		tester.AssertEqual(t, true, errors.Is(err, target))
 	})
 	t.Run("errors not equal", func(t *testing.T) {
-		err1 := &Error{Type: "foo", Msg: "", Inner: nil}
-		err2 := &Error{Type: "bar", Msg: "", Inner: io.EOF}
-		tester.AssertEqual(t, false, errors.Is(err1, err2))
+		target := &Error{Type: "foo"}
+		err := &Error{Type: "bar"}
+		tester.AssertEqual(t, false, errors.Is(err, target))
+	})
+	t.Run("wrapped error equal", func(t *testing.T) {
+		target := &Error{Type: "type"}
+		inner := &Error{Type: "type"}
+		err := fmt.Errorf("outer error [%w]", inner)
+		tester.AssertEqual(t, true, errors.Is(err, target))
 	})
 	t.Run("wrapped error not equal", func(t *testing.T) {
-		err1 := &Error{Type: "type", Msg: "msg", Inner: nil}
-		err2 := fmt.Errorf("outer error [%w]", io.EOF)
-		tester.AssertEqual(t, false, err1.Is(err2))
+		target := &Error{Type: "type"}
+		err := fmt.Errorf("outer error [%w]", io.EOF)
+		tester.AssertEqual(t, false, errors.Is(err, target))
+	})
+	t.Run("wrapped errors equal", func(t *testing.T) {
+		target := &Error{Type: "type"}
+		inner := &Error{Type: "type"}
+		err := fmt.Errorf("outer error [%w] [%w]", io.EOF, inner)
+		tester.AssertEqual(t, true, errors.Is(err, target))
+	})
+	t.Run("wrapped error not equal", func(t *testing.T) {
+		target := &Error{Type: "type"}
+		err := fmt.Errorf("outer error [%w] [%w]", io.EOF, io.ErrUnexpectedEOF)
+		tester.AssertEqual(t, false, errors.Is(err, target))
 	})
 }
