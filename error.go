@@ -1,9 +1,5 @@
 package env
 
-import (
-	"errors"
-)
-
 // Error is environmental variable related error.
 type Error struct {
 	Inner error  // Inner is the inner error.
@@ -26,13 +22,13 @@ func (e *Error) Error() string {
 	return s
 }
 
-func (e *Error) Is(err error) bool {
-	for err != nil {
-		ee, ok := err.(*Error)
-		if ok {
-			return e.Type == ee.Type
-		}
-		err = errors.Unwrap(err)
+func (e *Error) Is(target error) bool {
+	if e == nil {
+		return e == target
+	}
+	ee, ok := target.(*Error)
+	if ok {
+		return e.Type == ee.Type
 	}
 	return false
 }
