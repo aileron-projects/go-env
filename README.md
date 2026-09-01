@@ -5,7 +5,7 @@
 [![Release](https://img.shields.io/github/v/release/aileron-projects/go-env?sort=semver)](https://github.com/aileron-projects/go-env/releases)
 [![Reference](https://pkg.go.dev/badge/github.com/aileron-projects/go-env.svg)](https://pkg.go.dev/github.com/aileron-projects/go-env)
 [![DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/aileron-projects/go-env)
-[![Test](https://github.com/aileron-projects/go-env/actions/workflows/test.yaml/badge.svg)](https://github.com/aileron-projects/go/actions/workflows/test.yaml)
+[![Test](https://github.com/aileron-projects/go-env/actions/workflows/test.yaml/badge.svg)](https://github.com/aileron-projects/go-env/actions/workflows/test.yaml)
 
 [![Insights](https://badgen.net/badge/Insights/open%2Fsource%2Finsights/cyan)](https://deps.dev/go/github.com%2Faileron-projects%2Fgo-env)
 [![Insights](https://badgen.net/badge/Insights/OSS%2FInsight/orange)](https://ossinsight.io/analyze/aileron-projects/go-env)
