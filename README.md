@@ -191,12 +191,26 @@ FOO=${BAR}
 
 ### Auto-loading env file
 
-Import `autoload` package to automatically load `.env`.
-File path can be changed by `autoload.FilePath`.
+Import `autoload` to automatically load env files.
+
+- `application.env` is loaded if exists
+- `application-${profile}.env` is loaded if exists
+  - use `ENV_ACTIVE_PROFILE` exvironmental variable to set the `${profile}`
 
 ```go
 import (
     _ "github.com/aileron-projects/go-env/autoload"
+)
+```
+
+File name patterns can be changed by replacing global variable.
+
+```go
+var (
+  EnvDir         = "./"
+  EnvPath        = "application.env"
+  ProfilePattern = "application-${profile}.env"
+  Profile        = os.Getenv("ENV_ACTIVE_PROFILE")
 )
 ```
 
