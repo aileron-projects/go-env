@@ -138,6 +138,8 @@ export FOO=BAR   # BAR
 
 **Multiple lines:**
 
+- Use `""` of `''` for multi lining.
+
 ```txt
 # The following definition of FOO results in "BARBAZ".
 # Line breaks of LF and CRLF are removed.
@@ -150,6 +152,8 @@ BAZ
 
 **Comments:**
 
+- Use `#` for commenting.
+
 ```txt
 # Sharp '#' can be used for commenting.
 # It must not be in the scope of single quotes and double quotes.
@@ -161,16 +165,21 @@ FOO=BAR# comment     # '#' is not parsed as comment. It considered as a part of 
 
 **Escapes:**
 
+- `\` is used for escaping.
+- `\n` is replaced to LF, `\r` to CR and `\t` to TAB if they are in a scope of quotes.
+
 ```txt
 # '\\' can be used for escaping characters by following the 3 rules.
 # 1. '\\' always escapes special character of ', ", \\, #
 # 2. '\\' is ignored when it is not in the scope of single quotes or double quotes.
-# 3. '\\'n or "\n" in the scope of single or doubles quotes results in line breaks of LF.
-FOO=B\"R     # B"R
-FOO=B\'R     # B'A
-FOO="B\"R"   # B"R
-FOO=B\R      # BR (Its not in a scope of single or double quotes.)
-FOO="B\nR"   # B<LF>R (\n is, if in a scope of quotes, converted into a line break.)
+# 3. '\\'n or "\n" is replaced to LF, '\\'r or "\r" to CR, '\\'t or "\t" to TAB.
+FOO=BA\"R      >> BA"R
+FOO=BA\'R      >> BA'R
+FOO="BA\"R"    >> BA"R
+FOO=BA\R       >> BAR (Its not in a scope of single or double quotes.)
+FOO="BA\nR"    >> BA<LF>R (\n is, if in a scope of quotes, converted into a line break.)
+FOO="BA\rR"    >> BA<CR>R (\r is, if in a scope of quotes, converted into a carriage return.)
+FOO="BA\tR"    >> BA<TAB>R (\t is, if in a scope of quotes, converted into a tab space.)
 ```
 
 **Environmental variables:**
