@@ -228,6 +228,27 @@ func TestParse(t *testing.T) {
 		tester.AssertDeepEqual(t, want, m)
 		tester.AssertEqualErr(t, nil, err)
 	})
+	t.Run("replace LF", func(t *testing.T) {
+		txt := `FOO="alice\nbob"`
+		m, err := env.Parse([]byte(txt))
+		want := map[string]string{"FOO": "alice\nbob"}
+		tester.AssertDeepEqual(t, want, m)
+		tester.AssertEqualErr(t, nil, err)
+	})
+	t.Run("replace CR", func(t *testing.T) {
+		txt := `FOO="alice\rbob"`
+		m, err := env.Parse([]byte(txt))
+		want := map[string]string{"FOO": "alice\rbob"}
+		tester.AssertDeepEqual(t, want, m)
+		tester.AssertEqualErr(t, nil, err)
+	})
+	t.Run("replace TAB", func(t *testing.T) {
+		txt := `FOO="alice\tbob"`
+		m, err := env.Parse([]byte(txt))
+		want := map[string]string{"FOO": "alice\tbob"}
+		tester.AssertDeepEqual(t, want, m)
+		tester.AssertEqualErr(t, nil, err)
+	})
 	t.Run("end with escape", func(t *testing.T) {
 		txt := `FOO=foo\`
 		m, err := env.Parse([]byte(txt))

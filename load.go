@@ -93,12 +93,14 @@ func LoadReaders(readers ...io.Reader) (map[string]string, error) {
 //		# '\\' can be used for escaping characters by following the 3 rules.
 //		# 1. '\\' always escapes special character of ', ", \\, #
 //		# 2. '\\' is ignored when it is not in the scope of single quotes or double quotes.
-//		# 3. '\\'n or "\n" in the scope of single or doubles quotes results in line breaks of LF.
-//		FOO=B\"R      >> B"R
-//		FOO=B\'R      >> B'A
-//		FOO="B\"R"    >> B"R
-//		FOO=B\R       >> BR (Its not in a scope of single or double quotes.)
-//		FOO="B\nR"    >> B<LF>R (\n is, if in a scope of quotes, converted into a line break.)
+//		# 3. '\\'n or "\n" is replaced to LF, '\\'r or "\r" to CR, '\\'t or "\t" to TAB.
+//		FOO=BA\"R      >> BA"R
+//		FOO=BA\'R      >> BA'R
+//		FOO="BA\"R"    >> BA"R
+//		FOO=BA\R       >> BAR (Its not in a scope of single or double quotes.)
+//		FOO="BA\nR"    >> BA<LF>R (\n is, if in a scope of quotes, converted into a line break.)
+//		FOO="BA\rR"    >> BA<CR>R (\r is, if in a scope of quotes, converted into a carriage return.)
+//		FOO="BA\tR"    >> BA<TAB>R (\t is, if in a scope of quotes, converted into a tab space.)
 //
 //	Environmental variables:
 //		# Load resolves environmental variables.
@@ -131,7 +133,7 @@ func parse(r io.Reader) (map[string]string, error) {
 		if !eof && err != nil {
 			return nil, err
 		}
-		line = bytes.Trim(line, "\t\n\f\r ")
+		line = bytes.TrimSpace(line)
 		line, err = subst(line, envs) // Replace environmental variable if exists.
 		if err != nil {
 			return nil, &Error{Inner: err, Type: "parse", Msg: "line " + strconv.Itoa(current)}
@@ -233,10 +235,21 @@ func scanValue(b []byte, sq, dq bool) (val string, isq, idq bool) {
 				escaped = false
 				continue
 			}
-			if (inSingleQuote || inDoubleQuote) && c == 'n' {
-				v = append(v, '\n')
-				escaped = false
-				continue
+			if inSingleQuote || inDoubleQuote {
+				switch c {
+				case 'n':
+					v = append(v, '\n')
+					escaped = false
+					continue
+				case 't':
+					v = append(v, '\t')
+					escaped = false
+					continue
+				case 'r':
+					v = append(v, '\r')
+					escaped = false
+					continue
+				}
 			}
 			v = append(v, c)
 			escaped = false
