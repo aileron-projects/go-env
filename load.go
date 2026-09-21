@@ -12,12 +12,8 @@ import (
 // Load loads environmental variables from files.
 // It sets parsed values with [os.Setenv].
 // Duplicated keys are always overwritten.
-// The default ".env" is loaded if no files provided.
 // See [Parse] for file formats and [Resolve] for enviromental variable expressions.
 func Load(files ...string) (map[string]string, error) {
-	if len(files) == 0 {
-		files = append(files, ".env")
-	}
 	readers := make([]io.Reader, 0, len(files))
 	for _, f := range files {
 		r, err := os.Open(f)
@@ -33,7 +29,6 @@ func Load(files ...string) (map[string]string, error) {
 // LoadReaders loads environmental variables from files.
 // It sets parsed values with [os.Setenv].
 // Duplicated keys are always overwritten.
-// Unline [Load], LoadReaders do nothing even when no readers were provided.
 func LoadReaders(readers ...io.Reader) (map[string]string, error) {
 	m := map[string]string{}
 	for _, r := range readers {
