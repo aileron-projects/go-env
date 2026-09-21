@@ -192,19 +192,23 @@ func scanName(b []byte) (name string, rest []byte, err error) {
 	if b[0] == '=' {
 		return "", nil, errors.New("key not found")
 	}
-	for i, c := range b {
+	before, after, found := bytes.Cut(b, []byte("="))
+	if !found {
+		return "", nil, errors.New("key-value seperator `=` not found")
+	}
+	before = bytes.TrimSpace(before)
+	after = bytes.TrimSpace(after)
+	for _, c := range before {
 		switch {
 		case '0' <= c && c <= '9':
 		case 'a' <= c && c <= 'z':
 		case 'A' <= c && c <= 'Z':
 		case c == '_':
-		case c == '=':
-			return string(b[:i]), b[i+1:], nil
 		default:
 			return "", nil, errors.New("invalid character `" + string(c) + "`")
 		}
 	}
-	return "", nil, errors.New("invalid expression")
+	return string(before), after, nil
 }
 
 // scanValue scans value line.

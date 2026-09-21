@@ -128,6 +128,23 @@ func TestParse(t *testing.T) {
 		tester.AssertDeepEqual(t, want, m)
 		tester.AssertEqualErr(t, nil, err)
 	})
+	t.Run("basic syntax", func(t *testing.T) {
+		txt := `
+		abcdefghijklmnopqrstuvwxyz = ok
+		ABCDEFGHIJKLMNOPQRSTUVWXYZ = OK
+		1234567890 = ok
+		test_underscore = ok
+		`
+		m, err := env.Parse([]byte(txt))
+		want := map[string]string{
+			"abcdefghijklmnopqrstuvwxyz": "ok",
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZ": "OK",
+			"1234567890":                 "ok",
+			"test_underscore":            "ok",
+		}
+		tester.AssertDeepEqual(t, want, m)
+		tester.AssertEqualErr(t, nil, err)
+	})
 	t.Run("comment", func(t *testing.T) {
 		txt := `
 		# comment line
